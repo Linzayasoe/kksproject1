@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#9a3412">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>{% block title %}Building Supplies{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans Myanmar"', 'Padauk', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brick: {
+              50:  '#fdf3f0',
+              100: '#fbe4de',
+              200: '#f6c6ba',
+              400: '#d9684c',
+              500: '#c0502f',
+              600: '#a63f24',
+              700: '#8a321c',
+              800: '#6e2815',
+              900: '#4a1b0e',
+            },
+            cream: '#faf6f1',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    input, select, textarea { font-size: 16px; } /* stops Android zoom on focus */
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      main { padding: 0 !important; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-cream text-stone-800 font-sans antialiased">
+  {% with current=request.resolver_match.url_name %}
+
+  <!-- Top header -->
+  <header class="no-print sticky top-0 z-30 bg-gradient-to-b from-brick-700 to-brick-800 text-white shadow-md">
+    <div class="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/>
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <h1 class="text-sm font-bold leading-snug">Ko Kyaw Kyaw Soe + Khin May Aung</h1>
+        <p class="text-xs leading-snug text-brick-200">Material Building Supplies Store</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page content -->
+  <main class="mx-auto w-full max-w-2xl px-4 pt-4 pb-28">
+    {% if messages %}
+      <div class="no-print mb-4 space-y-2">
+        {% for message in messages %}
+          <div class="rounded-2xl px-4 py-3 text-sm shadow-sm
+            {% if message.tags == 'error' %}bg-red-100 text-red-800
+            {% elif message.tags == 'success' %}bg-emerald-100 text-emerald-800
+            {% else %}bg-amber-100 text-amber-900{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Bottom navigation -->
+  <nav class="no-print safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto grid max-w-2xl grid-cols-4 items-end px-2">
+
+      <!-- ယနေ့ (Today) -->
+      <a href="#"
+         class="flex flex-col items-center gap-1 py-2 text-xs
+                {% if current == 'dashboard' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10"/>
+        </svg>
+        ယနေ့
+      </a>
+
+      <!-- မှတ်တမ်း (History) -->
+      <a href="#"
+         class="flex flex-col items-center gap-1 py-2 text-xs
+                {% if current == 'receipt_list' or current == 'receipt_detail' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        မှတ်တမ်း
+      </a>
+
+      <!-- ကုန်ပစ္စည်း (Products): highlights ONLY on the product view page -->
+      <a href="{% url 'product_view' %}"
+         class="flex flex-col items-center gap-1 py-2 text-xs
+                {% if current == 'product_view' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        ကုန်ပစ္စည်း
+      </a>
+
+      <!-- အသစ် (New): highlights on the product create page -->
+      <a href="{% url 'product_create' %}"
+         class="flex flex-col items-center gap-1 py-2 text-xs
+                {% if current == 'product_create' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+        <span class="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-brick-600 text-white shadow-lg ring-4 ring-cream active:bg-brick-700">
+          <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
+          </svg>
+        </span>
+        အသစ်
+      </a>
+
+    </div>
+  </nav>
+
+  {% endwith %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

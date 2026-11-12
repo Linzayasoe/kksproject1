@@ -1,0 +1,75 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<h2 class="mb-4 text-xl font-bold text-brick-800">ကုန်ပစ္စည်း ပြင်ဆင်ရန်</h2>
+
+<form method="POST" class="space-y-5 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-100">
+  {% csrf_token %}
+
+  {% if product_form.non_field_errors %}
+    <div class="rounded-lg bg-red-100 px-3 py-2 text-sm text-red-800">
+      {{ product_form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Name -->
+  <div>
+    <label for="id_name" class="mb-1.5 block text-sm font-medium text-stone-600">
+      ကုန်ပစ္စည်းအမည်
+    </label>
+    <input type="text" name="name" id="id_name" maxlength="200" required
+           value="{{ product_form.name.value|default_if_none:'' }}"
+           placeholder="ဥပမာ - သံ ၂ လက်မ"
+           class="w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+                  placeholder:text-stone-400
+                  focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+    {% for e in product_form.name.errors %}
+      <p class="mt-1 text-xs text-red-600">{{ e }}</p>
+    {% endfor %}
+  </div>
+
+  <!-- Price -->
+  <div>
+    <label for="id_price" class="mb-1.5 block text-sm font-medium text-stone-600">
+      ဈေးနှုန်း (ကျပ်)
+    </label>
+    <input type="number" name="price" id="id_price" step="any" min="0" inputmode="numeric" required
+           value="{{ product_form.price.value|default_if_none:''|floatformat:'0' }}"
+           placeholder="0"
+           class="w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+                  placeholder:text-stone-400
+                  focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+    {% for e in product_form.price.errors %}
+      <p class="mt-1 text-xs text-red-600">{{ e }}</p>
+    {% endfor %}
+  </div>
+
+  <!-- In stock -->
+  <div class="flex items-center gap-3">
+    <input type="checkbox" name="in_stock" id="id_in_stock"
+           {% if product_form.in_stock.value %}checked{% endif %}
+           class="h-5 w-5 rounded border-2 border-stone-400 text-brick-600 focus:ring-brick-500">
+    <label for="id_in_stock" class="text-sm text-stone-700">ကုန်ရှိ</label>
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex items-center justify-between pt-1">
+    <a href="{% url 'product_delete' product.pk %}"
+       class="rounded-lg px-4 py-2 text-sm font-medium text-red-600 active:bg-red-50">
+      ဖျက်ရန်
+    </a>
+
+    <div class="flex items-center gap-2">
+      <a href="{% url 'product_view' %}"
+         class="rounded-lg px-4 py-2 text-sm font-medium text-stone-500 active:bg-stone-100">
+        မလုပ်တော့ပါ
+      </a>
+      <button type="submit"
+              class="rounded-lg bg-brick-600 px-5 py-2 text-sm font-medium text-white shadow-sm active:bg-brick-700">
+        သိမ်းမည်
+      </button>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

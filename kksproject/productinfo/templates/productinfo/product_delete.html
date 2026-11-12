@@ -1,0 +1,41 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<div class="rounded-2xl bg-white p-6 text-center shadow-sm ring-1 ring-stone-100">
+
+  <!-- Warning icon -->
+  <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+    <svg class="h-7 w-7 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+  </div>
+
+  <h2 class="text-xl font-bold text-stone-800">သေချာပါသလား။</h2>
+  <p class="mt-2 text-sm leading-relaxed text-stone-500">
+    ဤကုန်ပစ္စည်းကို ဖျက်လိုသည်မှာ သေချာပါသလား။ ဖျက်ပြီးပါက ပြန်လည်ရယူ၍ မရပါ။
+  </p>
+
+  <!-- Product info -->
+  <div class="mt-4 rounded-xl bg-stone-100 px-4 py-3">
+    <p class="font-semibold text-stone-800">{{ product.name }}</p>
+    <p class="mt-1 text-sm font-bold text-brick-700">
+      {{ product.price|floatformat:0 }} <span class="text-xs font-medium text-stone-500">ကျပ်</span>
+    </p>
+  </div>
+
+  <!-- Buttons -->
+  <form method="POST" class="mt-6 flex items-center justify-center gap-3">
+    {% csrf_token %}
+    <a href="{% url 'product_view' %}"
+       class="rounded-lg bg-stone-100 px-5 py-2 text-sm font-medium text-stone-600 active:bg-stone-200">
+      မဖျက်ပါ
+    </a>
+    <button type="submit"
+            class="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white shadow-sm active:bg-red-700">
+      ဖျက်မည်
+    </button>
+  </form>
+
+</div>
+
+{% endblock %}

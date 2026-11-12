@@ -1,0 +1,74 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<!-- Title + add button -->
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-xl font-bold text-brick-800">ကုန်ပစ္စည်းများ</h2>
+  <a href="{% url 'product_create' %}"
+     class="flex items-center gap-1 rounded-xl bg-brick-600 px-4 py-2 text-sm font-medium text-white shadow active:bg-brick-700">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    ထည့်ရန်
+  </a>
+</div>
+
+<!-- Search -->
+<form method="get" class="mb-3">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input type="search" name="search" value="{{ search_product }}"
+         placeholder="အမည် သို့မဟုတ် ကုဒ်ဖြင့် ရှာရန်..." autocomplete="off"
+         class="w-full rounded-xl border-2 border-stone-300 bg-white px-4 py-3 shadow-sm
+                focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+</form>
+
+<!-- Filter buttons -->
+<div class="mb-4 flex gap-2">
+  <a href="?search={{ search_product }}&status=all"
+     class="rounded-full px-4 py-1.5 text-sm font-medium {% if status == 'all' %}bg-brick-600 text-white{% else %}bg-white text-stone-600 ring-1 ring-stone-300{% endif %}">အားလုံး</a>
+  <a href="?search={{ search_product }}&status=in"
+     class="rounded-full px-4 py-1.5 text-sm font-medium {% if status == 'in' %}bg-brick-600 text-white{% else %}bg-white text-stone-600 ring-1 ring-stone-300{% endif %}">ကုန်ရှိ</a>
+  <a href="?search={{ search_product }}&status=out"
+     class="rounded-full px-4 py-1.5 text-sm font-medium {% if status == 'out' %}bg-brick-600 text-white{% else %}bg-white text-stone-600 ring-1 ring-stone-300{% endif %}">ကုန်ပြတ်</a>
+</div>
+
+<!-- Product cards -->
+<div class="space-y-3">
+  {% for p in db_product %}
+  <div class="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+
+    <div class="min-w-0">
+      <h3 class="truncate font-semibold text-stone-800">{{ p.name }}</h3>
+      <p class="text-xs text-stone-400">{{ p.code }}</p>
+      <p class="mt-1 text-lg font-bold text-brick-700">
+        {{ p.price|floatformat:0 }} <span class="text-xs font-medium text-stone-500">ကျပ်</span>
+      </p>
+    </div>
+
+    <div class="flex shrink-0 flex-col items-end gap-2">
+      {% if p.in_stock %}
+        <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">ကုန်ရှိ</span>
+      {% else %}
+        <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">ကုန်ပြတ်</span>
+      {% endif %}
+
+      <div class="flex gap-4 text-sm font-medium">
+        <a href="{% url 'product_edit' p.pk %}" class="text-brick-600">ပြင်ရန်</a>
+        <a href="{% url 'product_delete' p.pk %}" class="text-stone-400">ဖျက်ရန်</a>
+      </div>
+    </div>
+
+  </div>
+  {% empty %}
+  <div class="rounded-2xl border-2 border-dashed border-stone-300 p-8 text-center text-stone-500">
+    {% if search_product or status != 'all' %}
+      <p class="font-medium">ရှာမတွေ့ပါ</p>
+    {% else %}
+      <p class="font-medium">ကုန်ပစ္စည်း မရှိသေးပါ</p>
+      <p class="mt-1 text-sm">"ထည့်ရန်" ကိုနှိပ်ပြီး ပထမဆုံးကုန်ပစ္စည်းကို ထည့်ပါ။</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
