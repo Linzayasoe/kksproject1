@@ -1,0 +1,227 @@
+{% extends 'productinfo/base.html' %}
+
+{% block extra_head %}
+<style>
+  @media print {
+    @page { margin: 8mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* hide everything, then show only the voucher */
+    body * { visibility: hidden; }
+    #voucher, #voucher * { visibility: visible; }
+    #voucher {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      max-width: 100%;
+      box-shadow: none;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Wrapper: centers the voucher on the page -->
+<div class="mx-auto max-w-sm">
+
+  <!-- Voucher: this is the part saved as an image -->
+  <div id="voucher" class="voucher w-full">
+
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-t-3xl bg-gradient-to-br from-brick-600 via-brick-700 to-brick-900 px-5 pb-8 pt-6 text-center text-white">
+      <div class="absolute -left-8 -top-8 h-28 w-28 rounded-full bg-white/10"></div>
+      <div class="absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-white/10"></div>
+
+      <div class="relative">
+        <div class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 ring-2 ring-white/40">
+          <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/>
+          </svg>
+        </div>
+        <p class="text-sm font-bold leading-snug">Ko Kyaw Kyaw Soe + Khin May Aung</p>
+        <p class="text-xs text-brick-200">Material Building Supplies Store</p>
+
+        <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-brick-800 shadow">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm font-bold leading-normal">{{ receipt.v_code }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="bg-white px-5 pb-5 pt-4">
+
+      <!-- Date + sale type -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5 text-xs leading-normal text-stone-500">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+          </svg>
+          {{ receipt.created_at|date:"d/m/Y" }} &middot; {{ receipt.created_at|date:"H:i" }}
+        </div>
+        <span class="rounded-full border-2 border-dashed border-brick-400 bg-brick-50 px-3 py-1 text-xs font-bold leading-normal text-brick-700">
+          {{ receipt.get_sale_type_display }}
+        </span>
+      </div>
+
+      {% if receipt.customer %}
+      <div class="mt-3 flex items-center gap-2 rounded-xl bg-stone-100 px-3 py-2 text-sm leading-relaxed text-stone-700">
+        <svg class="h-4 w-4 shrink-0 text-brick-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span>ဝယ်သူ - <span class="font-semibold">{{ receipt.customer }}</span></span>
+      </div>
+      {% endif %}
+
+      <!-- Items heading -->
+      <p class="mb-1 mt-4 text-xs font-semibold leading-relaxed text-stone-400">
+        ကုန်ပစ္စည်း ({{ receipt.items.count }})
+      </p>
+
+      <!-- Items -->
+      <div class="divide-y divide-dashed divide-stone-200">
+        {% for item in receipt.items.all %}
+        <div class="flex items-center gap-3 py-3">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brick-100 text-xs font-bold text-brick-700">
+            {{ forloop.counter }}
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="break-words font-semibold leading-relaxed text-stone-800">{{ item.product.name }}</p>
+            <p class="text-xs leading-relaxed text-stone-500">
+              {{ item.quantity|floatformat:"-2" }} × {{ item.unit_price|floatformat:0 }}
+            </p>
+          </div>
+          <p class="shrink-0 text-base font-bold leading-normal text-stone-800">{{ item.total|floatformat:0 }}</p>
+        </div>
+        {% empty %}
+        <p class="py-6 text-center text-sm leading-relaxed text-stone-500">ကုန်ပစ္စည်း မရှိပါ</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Tear line with punched notches -->
+    <div class="relative bg-white">
+      <div class="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-cream"></div>
+      <div class="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-cream"></div>
+      <div class="mx-5 border-t-2 border-dashed border-stone-300"></div>
+    </div>
+
+    <!-- Total -->
+    <div class="bg-white px-5 pb-5 pt-4">
+      <div class="rounded-2xl bg-gradient-to-r from-brick-600 to-brick-700 px-4 py-3 text-white">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium leading-normal text-brick-100">စုစုပေါင်း</span>
+          <span class="text-2xl font-extrabold leading-normal">
+            {{ receipt.total_amount|floatformat:0 }}
+            <span class="text-sm font-semibold text-brick-100">ကျပ်</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="mt-3 flex items-center justify-between text-sm">
+        <span class="leading-relaxed text-stone-500">ငွေပေးချေမှု</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold leading-normal
+              {% if receipt.pay_by == 'kpay' %}bg-sky-100 text-sky-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+          {% if receipt.pay_by == 'kpay' %}
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          {% else %}
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          {% endif %}
+          {{ receipt.get_pay_by_display }}
+        </span>
+      </div>
+
+      <!-- Thank you -->
+      <div class="mt-5 text-center">
+        <p class="text-sm font-bold leading-relaxed text-brick-700">ကျေးဇူးတင်ပါသည် ။</p>
+        <p class="text-xs leading-relaxed text-stone-400">ထပ်မံလာရောက်ဝယ်ယူပါရန် ဖိတ်ခေါ်ပါသည်</p>
+      </div>
+    </div>
+
+    <!-- Torn paper edge -->
+    <svg class="block w-full" height="10" viewBox="0 0 160 10" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 0 L8 10 L16 0 L24 10 L32 0 L40 10 L48 0 L56 10 L64 0 L72 10 L80 0 L88 10 L96 0 L104 10 L112 0 L120 10 L128 0 L136 10 L144 0 L152 10 L160 0 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+  <!-- end #voucher -->
+
+</div>
+<!-- end wrapper -->
+
+<!-- Buttons (hidden when printing) -->
+<div class="no-print mx-auto mt-6 flex max-w-sm gap-3">
+  <button type="button" id="saveBtn"
+          class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brick-600 py-3 text-sm font-semibold text-white shadow active:bg-brick-700">
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4a3 3 0 014 0l4 4M14 14l1-1a3 3 0 014 0l1 1M4 4h16v16H4z"/>
+    </svg>
+    <span id="saveText">ဓာတ်ပုံသိမ်းရန်</span>
+  </button>
+  <button type="button" onclick="window.print()"
+          class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white py-3 text-sm font-semibold text-stone-700 shadow ring-1 ring-stone-200 active:bg-stone-100">
+    ပရင့်ထုတ်ရန်
+  </button>
+</div>
+
+<a href="{% url 'receipt_create' %}"
+   class="no-print mx-auto mt-3 block max-w-sm rounded-xl bg-stone-200 py-3 text-center text-sm font-semibold text-stone-700 active:bg-stone-300">
+  ဘောက်ချာအသစ်
+</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+<script>
+  const saveBtn = document.getElementById("saveBtn");
+  const saveText = document.getElementById("saveText");
+
+  saveBtn.addEventListener("click", async () => {
+    const label = saveText.textContent;
+    saveText.textContent = "ခဏစောင့်ပါ...";
+    saveBtn.disabled = true;
+
+    try {
+      await document.fonts.ready;
+      const node = document.getElementById("voucher");
+
+      // first call warms up fonts, second call is the clean result
+      await htmlToImage.toBlob(node, { pixelRatio: 1 });
+      const blob = await htmlToImage.toBlob(node, {
+        pixelRatio: 3,
+        backgroundColor: "#faf6f1",
+        cacheBust: true,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+        style: { margin: "0", transform: "none" },
+      });
+
+      const file = new File([blob], "{{ receipt.v_code }}.png", { type: "image/png" });
+
+      // Phone: share sheet, where "Save image" puts it in the gallery
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file] });
+      } else {
+        // Fallback: normal download
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "{{ receipt.v_code }}.png";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") alert("သိမ်း၍မရပါ။ ထပ်ကြိုးစားပါ။");
+    } finally {
+      saveText.textContent = label;
+      saveBtn.disabled = false;
+    }
+  });
+</script>
+
+{% endblock %}

@@ -7,6 +7,7 @@ class Product(models.Model):
   price = models.IntegerField()
   in_stock = models.BooleanField(default=True)
   created_at = models.DateTimeField(auto_now_add=True)
+  
 
   def __str__(self):
     return f"{self.code} - {self.name}"

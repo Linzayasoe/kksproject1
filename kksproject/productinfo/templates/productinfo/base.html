@@ -91,7 +91,7 @@
     <div class="mx-auto grid max-w-2xl grid-cols-4 items-end px-2">
 
       <!-- ယနေ့ (Today) -->
-      <a href="#"
+      <a href="{% url 'index' %}"
          class="flex flex-col items-center gap-1 py-2 text-xs
                 {% if current == 'dashboard' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -101,9 +101,9 @@
       </a>
 
       <!-- မှတ်တမ်း (History) -->
-      <a href="#"
+      <a href="{% url 'receipt_view' %}"
          class="flex flex-col items-center gap-1 py-2 text-xs
-                {% if current == 'receipt_list' or current == 'receipt_detail' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+                {% if current == 'receipt_view' or current == 'receipt_detail' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
@@ -121,7 +121,7 @@
       </a>
 
       <!-- အသစ် (New): highlights on the product create page -->
-      <a href="{% url 'product_create' %}"
+      <a href="{% url 'receipt_create' %}"
          class="flex flex-col items-center gap-1 py-2 text-xs
                 {% if current == 'product_create' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
         <span class="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-brick-600 text-white shadow-lg ring-4 ring-cream active:bg-brick-700">

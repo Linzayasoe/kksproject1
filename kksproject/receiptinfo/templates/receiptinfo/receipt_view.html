@@ -1,0 +1,59 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<!-- Title + new button -->
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-xl font-bold text-brick-800">ဘောက်ချာ မှတ်တမ်း</h2>
+  <a href="{% url 'receipt_create' %}"
+     class="flex items-center gap-1 rounded-xl bg-brick-600 px-4 py-2 text-sm font-medium text-white shadow active:bg-brick-700">
+    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/>
+    </svg>
+    အသစ်
+  </a>
+</div>
+
+<!-- Receipt cards -->
+<div class="space-y-3">
+  {% for r in receipt %}
+  <a href="{% url 'receipt_detail' r.pk %}"
+     class="block rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100 active:bg-stone-50">
+
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <p class="font-bold text-stone-800">{{ r.v_code }}</p>
+          <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold
+                {% if r.sale_type == 'wholesale' %}bg-amber-100 text-amber-800{% else %}bg-brick-50 text-brick-700{% endif %}">
+            {{ r.get_sale_type_display }}
+          </span>
+        </div>
+        <p class="mt-0.5 text-xs text-stone-500">{{ r.created_at|date:"d/m/Y H:i" }}</p>
+        {% if r.customer %}
+          <p class="mt-1 truncate text-sm text-stone-600">ဝယ်သူ - {{ r.customer }}</p>
+        {% endif %}
+      </div>
+
+      <div class="shrink-0 text-right">
+        <p class="text-lg font-extrabold text-brick-700">{{ r.total_amount|floatformat:0 }}</p>
+        <span class="mt-0.5 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold
+              {% if r.pay_by == 'kpay' %}bg-sky-100 text-sky-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+          {{ r.get_pay_by_display }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Item preview -->
+    <p class="mt-2 truncate border-t border-dashed border-stone-200 pt-2 text-xs text-stone-500">
+      {% for item in r.items.all %}{{ item.product.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+  </a>
+  {% empty %}
+  <div class="rounded-2xl border-2 border-dashed border-stone-300 p-8 text-center text-stone-500">
+    <p class="font-medium">ဘောက်ချာ မရှိသေးပါ</p>
+    <p class="mt-1 text-sm">"အသစ်" ကိုနှိပ်ပြီး ပထမဆုံး ဘောက်ချာကို ဖွင့်ပါ။</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

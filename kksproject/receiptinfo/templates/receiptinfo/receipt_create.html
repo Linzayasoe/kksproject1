@@ -1,0 +1,175 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<h2 class="mb-4 text-xl font-bold text-brick-800">ဘောက်ချာအသစ်</h2>
+
+{% if error %}
+  <div class="mb-3 rounded-lg bg-red-100 px-3 py-2 text-sm text-red-800">{{ error }}</div>
+{% endif %}
+
+<form method="POST" class="space-y-5">
+  {% csrf_token %}
+
+  <!-- Sale type + customer -->
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-100">
+    <p class="mb-1.5 text-sm font-medium text-stone-600">ရောင်းချမှု အမျိုးအစား</p>
+    <div class="flex gap-3">
+      <label class="flex-1">
+        <input type="radio" name="sale_type" value="retail" class="peer sr-only" checked>
+        <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
+                     peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">လက်လီ</span>
+      </label>
+      <label class="flex-1">
+        <input type="radio" name="sale_type" value="wholesale" class="peer sr-only">
+        <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
+                     peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">လက်ကား</span>
+      </label>
+    </div>
+
+    <label for="id_customer" class="mb-1.5 mt-4 block text-sm font-medium text-stone-600">ဝယ်သူအမည် (မဖြစ်မနေမဟုတ်)</label>
+    <input type="text" name="customer" id="id_customer" maxlength="200"
+           class="w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+                  focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+  </div>
+
+  <!-- Item rows are added here -->
+  <div id="itemList" class="space-y-3"></div>
+
+  <button type="button" id="addBtn"
+          class="w-full rounded-xl border-2 border-dashed border-brick-400 py-3 text-sm font-medium text-brick-700 active:bg-brick-50">
+    + ကုန်ပစ္စည်း ထပ်ထည့်ရန်
+  </button>
+
+  <!-- Total + pay by -->
+  <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-100">
+    <div class="flex justify-between text-lg font-bold text-brick-700">
+      <span>စုစုပေါင်း</span>
+      <span><span id="grandTotal">0</span> ကျပ်</span>
+    </div>
+
+    <p class="mb-1.5 mt-4 text-sm font-medium text-stone-600">ငွေပေးချေမှု</p>
+    <div class="flex gap-3">
+      <label class="flex-1">
+        <input type="radio" name="pay_by" value="cash" class="peer sr-only" checked>
+        <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
+                     peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">ငွေသား</span>
+      </label>
+      <label class="flex-1">
+        <input type="radio" name="pay_by" value="kpay" class="peer sr-only">
+        <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
+                     peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">KPay</span>
+      </label>
+    </div>
+
+    <div class="mt-5 flex justify-end">
+      <button type="submit"
+              class="rounded-lg bg-brick-600 px-5 py-2 text-sm font-medium text-white shadow-sm active:bg-brick-700">
+        သိမ်းမည်
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- One item row (copied by JavaScript) -->
+<template id="rowTpl">
+  <div class="item-row rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-stone-400">ကုန်ပစ္စည်း</span>
+      <button type="button" class="remove-btn text-sm font-medium text-red-600">ဖယ်ရန်</button>
+    </div>
+
+    <select name="product"
+            class="p-select mt-1 w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+                   focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+      <option value="" data-price="0">-- ရွေးပါ --</option>
+      {% for p in products %}
+        <option value="{{ p.pk }}" data-price="{{ p.price|stringformat:'d' }}">{{ p.code }} - {{ p.name }}</option>
+      {% endfor %}
+    </select>
+
+    <div class="mt-3 grid grid-cols-2 gap-3">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-stone-600">အရေအတွက်</label>
+        <input type="number" name="quantity" min="0" step="any" inputmode="decimal"
+               class="p-qty w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+                      focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-stone-600">ဈေးနှုန်း (ကျပ်)</label>
+        <input type="number" name="unit_price" min="0" step="any" inputmode="numeric" readonly
+               class="p-price w-full rounded-lg border-2 border-stone-300 bg-stone-100 px-3 py-2.5 text-base
+                      focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
+      </div>
+    </div>
+
+    <div class="mt-3 flex justify-between text-sm text-stone-600">
+      <span>ကျသင့်ငွေ</span>
+      <span class="font-semibold text-stone-800"><span class="line-total">0</span> ကျပ်</span>
+    </div>
+  </div>
+</template>
+
+<script>
+  const list = document.getElementById("itemList");
+  const tpl = document.getElementById("rowTpl");
+  const grandEl = document.getElementById("grandTotal");
+
+  const isWholesale = () =>
+    document.querySelector('input[name="sale_type"]:checked').value === "wholesale";
+
+  const basePrice = (row) => {
+    const sel = row.querySelector(".p-select");
+    return Number(sel.options[sel.selectedIndex].dataset.price) || 0;
+  };
+
+  // resetPrices = true puts every price back to the product's original price
+  function refresh(resetPrices) {
+    const wholesale = isWholesale();
+    let grand = 0;
+
+    list.querySelectorAll(".item-row").forEach(row => {
+      const priceInput = row.querySelector(".p-price");
+      const qty = Number(row.querySelector(".p-qty").value) || 0;
+
+      priceInput.readOnly = !wholesale;
+      priceInput.classList.toggle("bg-stone-100", !wholesale);
+      priceInput.classList.toggle("bg-white", wholesale);
+
+      if (!wholesale || resetPrices) priceInput.value = basePrice(row) || "";
+
+      const line = Math.round((Number(priceInput.value) || 0) * qty);
+      row.querySelector(".line-total").textContent = line.toLocaleString();
+      grand += line;
+    });
+
+    grandEl.textContent = grand.toLocaleString();
+  }
+
+  function addRow() {
+    list.appendChild(tpl.content.cloneNode(true));
+    refresh(true);
+  }
+
+  document.getElementById("addBtn").addEventListener("click", addRow);
+
+  list.addEventListener("change", e => {
+    if (e.target.classList.contains("p-select")) refresh(true);
+  });
+  list.addEventListener("input", e => {
+    if (e.target.classList.contains("p-qty") || e.target.classList.contains("p-price")) refresh(false);
+  });
+  list.addEventListener("click", e => {
+    if (e.target.classList.contains("remove-btn") && list.querySelectorAll(".item-row").length > 1) {
+      e.target.closest(".item-row").remove();
+      refresh(false);
+    }
+  });
+
+  document.querySelectorAll('input[name="sale_type"]').forEach(r =>
+    r.addEventListener("change", () => refresh(true))
+  );
+
+  addRow();   // start with one row
+</script>
+
+{% endblock %}

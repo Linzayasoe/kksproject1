@@ -1,0 +1,183 @@
+{% extends 'productinfo/base.html' %}
+{% block content %}
+
+<!-- Greeting -->
+<div class="mb-4">
+  <h2 class="text-xl font-bold text-brick-800">ယနေ့ ရောင်းအား</h2>
+  <p class="text-sm text-stone-500">{{ today|date:"d/m/Y" }}</p>
+</div>
+
+<!-- Today's income -->
+<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brick-600 via-brick-700 to-brick-900 p-5 text-white shadow-lg">
+  <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10"></div>
+  <div class="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/10"></div>
+
+  <div class="relative">
+    <p class="text-sm font-medium text-brick-100">ယနေ့ ဝင်ငွေ</p>
+    <p class="mt-1 text-4xl font-extrabold leading-none">
+      {{ today_income|floatformat:0 }}
+      <span class="text-base font-semibold text-brick-100">ကျပ်</span>
+    </p>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+      {% if diff > 0 %}
+        <span class="rounded-full bg-emerald-400/90 px-2.5 py-1 font-semibold text-emerald-950">
+          ▲ မနေ့ကထက် {{ diff|floatformat:0 }}
+        </span>
+      {% elif diff < 0 %}
+        <span class="rounded-full bg-red-300 px-2.5 py-1 font-semibold text-red-950">
+          ▼ မနေ့ကထက် {{ diff|floatformat:0 }}
+        </span>
+      {% else %}
+        <span class="rounded-full bg-white/20 px-2.5 py-1 font-semibold">မနေ့နှင့် တူညီ</span>
+      {% endif %}
+      <span class="text-brick-100">မနေ့ - {{ yesterday_total|floatformat:0 }} ကျပ်</span>
+    </div>
+  </div>
+</div>
+
+<!-- Small stats -->
+<div class="mt-3 grid grid-cols-2 gap-3">
+  <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+    <div class="flex items-center gap-2 text-xs font-medium text-stone-500">
+        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-brick-100 text-brick-700">
+             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v14l-3-2-2 2-2-2-2 2-2-2-3 2V6a2 2 0 012-2z"/></svg>
+        </span>
+        ဘောက်ချာ အရေအတွက်
+    </div>
+
+    <p class="mt-2 flex items-center justify-center text-2xl font-bold text-ring-stone-100">
+        {{ count }}
+    </p>
+</div>
+
+  <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+    <div class="flex items-center gap-2 text-xs font-medium text-stone-500">
+      <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg>
+      </span>
+      ယခုလ ဝင်ငွေ
+    </div>
+    <p class="mt-2 text-xl font-bold text-stone-800">
+      {{ today_income|floatformat:0 }} <span class="text-xs font-medium text-stone-500">ကျပ်</span>
+    </p>
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div class="mt-4 grid grid-cols-3 gap-3">
+  <a href="{% url 'receipt_create' %}" class="flex flex-col items-center gap-2 rounded-2xl bg-brick-600 px-2 py-4 text-center text-xs font-semibold text-white shadow active:bg-brick-700">
+    <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg>
+    ဘောက်ချာအသစ်
+  </a>
+  <a href="{% url 'product_view' %}" class="flex flex-col items-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-semibold text-stone-700 shadow-sm ring-1 ring-stone-100 active:bg-stone-50">
+    <svg class="h-7 w-7 text-brick-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+    ကုန်ပစ္စည်းများ
+  </a>
+  <a href="{% url 'product_create' %}" class="flex flex-col items-center gap-2 rounded-2xl bg-white px-2 py-4 text-center text-xs font-semibold text-stone-700 shadow-sm ring-1 ring-stone-100 active:bg-stone-50">
+    <svg class="h-7 w-7 text-brick-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    ကုန်ပစ္စည်းထည့်
+  </a>
+</div>
+
+<!-- Payment split -->
+<div class="mt-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100 space-y-4">
+  <h3 class="mb-3 text-sm font-bold text-stone-700">ငွေပေးချေမှု</h3>
+
+  <div class="flex h-3 overflow-hidden rounded-full bg-stone-100">
+    <div class="bg-emerald-500" style="width: {{ cash_pct }}%"></div>
+    <div class="bg-sky-500" style="width: {{ kpay_pct }}%"></div>
+  </div>
+
+  <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+    <div class="space-y-3">
+      <p class="flex items-center gap-1.5 text-xs text-stone-500"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>ငွေသား ({{ cash }})</p>
+      <p class="font-bold text-stone-800">{{ cash|floatformat:0 }}</p>
+    </div>
+    <div class="space-y-3">
+      <p class="flex items-center gap-1.5 text-xs text-stone-500"><span class="h-2.5 w-2.5 rounded-full bg-sky-500"></span>KPay ({{ kpay }})</p>
+      <p class="font-bold text-stone-800">{{ kpay|floatformat:0 }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Retail vs wholesale -->
+<div class="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+  <h3 class="mb-3 text-sm font-bold text-stone-700">လက်လီ / လက်ကား</h3>
+
+  <div class="flex h-3 overflow-hidden rounded-full bg-stone-100">
+    <div class="bg-brick-500" style="width: {{ retail_pct }}%"></div>
+    <div class="bg-amber-400" style="width: {{ wholesale_pct }}%"></div>
+  </div>
+
+  <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+    <div>
+      <p class="flex items-center gap-1.5 text-xs text-stone-500"><span class="h-2.5 w-2.5 rounded-full bg-brick-500"></span>လက်လီ ({{ retail_pct }}%)</p>
+      <p class="font-bold text-stone-800">{{ retail|floatformat:0 }}</p>
+    </div>
+    <div>
+      <p class="flex items-center gap-1.5 text-xs text-stone-500"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>လက်ကား ({{ wholesale_pct }}%)</p>
+      <p class="font-bold text-stone-800">{{ wholesale|floatformat:0 }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Top products today -->
+<div class="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+  <h3 class="mb-2 text-sm font-bold text-stone-700">ယနေ့ ရောင်းအားအကောင်းဆုံး</h3>
+  {% for tp in highest_amount %}
+  <div class="flex items-center gap-3 border-t border-dashed border-stone-200 py-2.5 first:border-0">
+    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brick-100 text-xs font-bold text-brick-700">{{ forloop.counter }}</span>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-semibold text-stone-800">{{ tp.product__name }}</p>
+      <p class="text-xs text-stone-500">{{ tp.qty|floatformat:"-2" }}</p>
+    </div>
+    <p class="text-sm font-bold text-brick-700">{{ tp.amount|floatformat:0 }}</p>
+  </div>
+  {% empty %}
+  <p class="py-4 text-center text-sm text-stone-400">ယနေ့ ရောင်းချမှု မရှိသေးပါ</p>
+  {% endfor %}
+</div>
+
+<!-- Recent receipts -->
+<div class="mt-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
+  <div class="mb-2 flex items-center justify-between">
+    <h3 class="text-sm font-bold text-stone-700">နောက်ဆုံး ဘောက်ချာများ</h3>
+    <a href="{% url 'receipt_view' %}" class="text-xs font-medium text-brick-600">အားလုံးကြည့်ရန်</a>
+  </div>
+
+  {% for r in last_receipt %}
+  <a href="{% url 'receipt_detail' r.pk %}"
+     class="flex items-center justify-between gap-3 border-t border-dashed border-stone-200 py-2.5 first:border-0 active:bg-stone-50">
+    <div class="min-w-0">
+      <p class="text-sm font-semibold text-stone-800">{{ r.v_code }}
+        <span class="ml-1 rounded-full bg-brick-50 px-2 py-0.5 text-[10px] font-semibold text-brick-700">{{ r.get_sale_type_display }}</span>
+      </p>
+      <p class="truncate text-xs text-stone-500">
+        {{ r.created_at|date:"d/m H:i" }}{% if r.customer %} · {{ r.customer }}{% endif %}
+      </p>
+    </div>
+    <div class="shrink-0 text-right">
+      <p class="text-sm font-bold text-stone-800">{{ r.total_amount|floatformat:0 }}</p>
+      <p class="text-[10px] font-medium {% if r.pay_by == 'kpay' %}text-sky-600{% else %}text-emerald-600{% endif %}">{{ r.get_pay_by_display }}</p>
+    </div>
+  </a>
+  {% empty %}
+  <p class="py-4 text-center text-sm text-stone-400">ဘောက်ချာ မရှိသေးပါ</p>
+  {% endfor %}
+</div>
+
+<!-- Product alert -->
+<div class="mt-3 flex items-center justify-between gap-3 rounded-2xl p-4 ring-1
+     {% if out_of_stock %}bg-red-50 ring-red-200{% else %}bg-emerald-50 ring-emerald-200{% endif %}">
+  <div>
+    <p class="text-sm font-bold {% if out_of_stock %}text-red-800{% else %}text-emerald-800{% endif %}">
+      {% if out_of_stock %}ကုန်ပြတ်နေသော ပစ္စည်း {{ out_of_stock }} မျိုး{% else %}ကုန်ပစ္စည်းအားလုံး ကုန်ရှိပါသည်{% endif %}
+    </p>
+    <p class="text-xs text-stone-500">စုစုပေါင်း ကုန်ပစ္စည်း {{ product_count }} မျိုး</p>
+  </div>
+  <a href="{% url 'product_view' %}?status=out"
+     class="shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm ring-1 ring-stone-200">ကြည့်ရန်</a>
+</div>
+
+{% endblock %}
