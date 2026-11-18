@@ -5,14 +5,20 @@ from receiptinfo.models import Receipt,ReceiptItem
 from django.db.models import Sum,F,ExpressionWrapper,DecimalField
 from django.utils import timezone
 from django.db.models.functions import Coalesce
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from datetime import timedelta
 #Product View & search filter
+@login_required
 def product_view(request):
     search_product = request.GET.get("search","").strip()
     status = request.GET.get("status","all")
     db_product = Product.objects.all()
   
     if search_product:
-      db_product = db_product.filter(name__icontains=search_product) | db_product.filter(code__icontains=search_product)
+      db_product = db_product.filter(
+        Q(name__icontains=search_product) | Q(code__icontains=search_product)
+      )
     if status == "in":
       db_product = db_product.filter(in_stock=True)
     elif status == "out":
@@ -21,20 +27,22 @@ def product_view(request):
     return render (request,'productinfo/product_view.html',{'search_product':search_product,'status':status,'db_product':db_product})
   
 #Product Create
+@login_required
 def product_create(request):
   if request.method == 'POST':
     product_form = ProductForm(data=request.POST)
     if product_form.is_valid():
       product_form.save()
+      return redirect('product_view')
 
   else:
     product_form = ProductForm()
   return render(request,'productinfo/product_create.html',{'product_form':product_form})
 
 #Product Edit
+@login_required
 def product_edit(request,pk):
   product = get_object_or_404(Product,pk=pk)
-  print(product)
   if request.method == "POST":
     product_form = ProductForm(data=request.POST,instance=product)
     if product_form.is_valid():
@@ -45,6 +53,7 @@ def product_edit(request,pk):
   return render(request,'productinfo/product_edit.html',{'product_form':product_form, 'product':product})
 
 # Product Delete
+@login_required
 def product_delete(request,pk):
   product = get_object_or_404(Product,pk=pk)
   if request.method == "POST":
@@ -52,12 +61,13 @@ def product_delete(request,pk):
     return redirect('product_view')
   return render(request,'productinfo/product_delete.html',{'product':product})
 
+@login_required
 def index(request):
 
   # receipt Count
   count = Receipt.objects.count()
-  kpay  = Receipt.objects.filter(pay_by='kpay').count()
-  cash  = Receipt.objects.filter(pay_by="cash").count()
+  kpay  = Receipt.objects.filter(is_void=False,pay_by='kpay').count()
+  cash  = Receipt.objects.filter(is_void=False,pay_by="cash").count()
 
 
   # cash & kpay
@@ -66,14 +76,15 @@ def index(request):
   kpay_pct = (kpay / total * 100) if total else 0
 
   # retail & wholesale
-  retail = Receipt.objects.filter(sale_type='retail').count()
-  wholesale = Receipt.objects.filter(sale_type='wholesale').count()
+
+  retail = Receipt.objects.filter(is_void=False,sale_type='retail').count()
+  wholesale = Receipt.objects.filter(is_void=False,sale_type='wholesale').count()
   total_sale_type = retail + wholesale
-  retail_pct = (retail / total_sale_type * 100) if total else 0
-  wholesale_pct = (wholesale / total_sale_type * 100) if total else 0
+  retail_pct = (retail / total_sale_type * 100) if total_sale_type else 0
+  wholesale_pct = (wholesale / total_sale_type * 100) if total_sale_type else 0
 
   # last receipt
-  last_receipt = Receipt.objects.order_by('-created_at')[:3]
+  last_receipt = Receipt.objects.filter(is_void=False).order_by('-created_at')[:3]
 
   # highest amount 
   highest_amount = ReceiptItem.objects.filter(

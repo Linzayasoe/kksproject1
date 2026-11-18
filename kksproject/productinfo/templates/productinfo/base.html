@@ -65,6 +65,14 @@
         <h1 class="text-sm font-bold leading-snug">Ko Kyaw Kyaw Soe + Khin May Aung</h1>
         <p class="text-xs leading-snug text-brick-200">Material Building Supplies Store</p>
       </div>
+            {% if user.is_authenticated %}
+      <form method="POST" action="{% url 'logout' %}" class="ml-auto">
+        {% csrf_token %}
+        <button type="submit" class="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white active:bg-white/25">
+          ထွက်ရန်
+        </button>
+      </form>
+      {% endif %}
     </div>
   </header>
 
@@ -93,7 +101,7 @@
       <!-- ယနေ့ (Today) -->
       <a href="{% url 'index' %}"
          class="flex flex-col items-center gap-1 py-2 text-xs
-                {% if current == 'dashboard' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
+                {% if current == 'index' %}font-bold text-brick-700{% else %}text-stone-500{% endif %}">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10"/>
         </svg>

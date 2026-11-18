@@ -4,8 +4,8 @@ from productinfo.models import Product
 class Receipt(models.Model):
 
   class PayBy(models.TextChoices):
-    CASH ="cash"
-    KPAY = "Kpay"
+    CASH ="cash","Cash"
+    KPAY = "Kpay","Kpay"
 
   class SaleType(models.TextChoices):
     RETAIL = "retail"
@@ -16,6 +16,7 @@ class Receipt(models.Model):
   pay_by = models.CharField(max_length=10,choices=PayBy.choices,default=PayBy.CASH)
   created_at = models.DateTimeField(auto_now_add=True)
   sale_type = models.CharField(max_length=10,choices=SaleType.choices,default=SaleType.RETAIL)
+  is_void = models.BooleanField(default=False)
 
 
   # Receipt Voucher Code

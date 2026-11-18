@@ -55,6 +55,12 @@
     <!-- Body -->
     <div class="bg-white px-5 pb-5 pt-4">
 
+      {% if receipt.is_void %}
+      <p class="mb-3 rounded-xl bg-red-100 py-2 text-center text-sm font-extrabold tracking-wide text-red-700">
+        VOID · ပယ်ဖျက်ပြီး
+      </p>
+      {% endif %}
+
       <!-- Date + sale type -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1.5 text-xs leading-normal text-stone-500">
@@ -171,6 +177,23 @@
     ပရင့်ထုတ်ရန်
   </button>
 </div>
+
+<!-- Void button (hidden when printing) -->
+{% if not receipt.is_void %}
+<form method="POST" action="{% url 'receipt_void' receipt.pk %}"
+      onsubmit="return confirm('ဤဘောက်ချာကို ပယ်ဖျက်မလား?')"
+      class="no-print mx-auto mt-3 max-w-sm">
+  {% csrf_token %}
+  <button type="submit"
+          class="w-full rounded-xl bg-red-50 py-3 text-sm font-semibold text-red-700 ring-1 ring-red-200 active:bg-red-100">
+    ပယ်ဖျက်ရန်
+  </button>
+</form>
+{% else %}
+<p class="no-print mx-auto mt-3 max-w-sm rounded-xl bg-red-100 py-3 text-center text-sm font-semibold text-red-800">
+  ဤဘောက်ချာ ပယ်ဖျက်ပြီးဖြစ်သည်
+</p>
+{% endif %}
 
 <a href="{% url 'receipt_create' %}"
    class="no-print mx-auto mt-3 block max-w-sm rounded-xl bg-stone-200 py-3 text-center text-sm font-semibold text-stone-700 active:bg-stone-300">
