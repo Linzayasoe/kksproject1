@@ -10,22 +10,46 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+# Private settings come from the .env file next to manage.py.
+# .env is listed in .gitignore, so it must never be committed.
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    for line in env_file.read_text(encoding='utf-8-sig').splitlines():
+        line = line.strip()
+        if line and not line.startswith('#') and '=' in line:
+            key, value = line.split('=', 1)
+            os.environ.setdefault(key.strip(), value.strip())
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^_4pzdbuuap4&8791plcrmzi@cm38h8j+@ney7s-^*d5o0ah^l'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        'DJANGO_SECRET_KEY is missing. Copy .env.example to .env '
+        '(next to manage.py) and add a new secret key.'
+    )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG stays off unless .env turns it on
+DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]
+
+# Turn this on only when the site is served over HTTPS
+if os.environ.get('DJANGO_HTTPS', 'false').lower() == 'true':
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
 
 # Application definition

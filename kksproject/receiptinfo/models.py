@@ -5,7 +5,7 @@ class Receipt(models.Model):
 
   class PayBy(models.TextChoices):
     CASH ="cash","Cash"
-    KPAY = "Kpay","Kpay"
+    KPAY = "kpay","Kpay"
 
   class SaleType(models.TextChoices):
     RETAIL = "retail"

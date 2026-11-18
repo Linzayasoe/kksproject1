@@ -20,13 +20,13 @@
 
     <div class="flex gap-3">
       <label class="flex-1">
-        <input type="radio" name="sale_type" value="retail" class="peer sr-only" checked>
+        <input type="radio" name="sale_type" value="retail" class="peer sr-only" {% if form_data.sale_type != 'wholesale' %}checked{% endif %}>
         <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
                      peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">လက်လီ</span>
       </label>
 
       <label class="flex-1">
-        <input type="radio" name="sale_type" value="wholesale" class="peer sr-only">
+        <input type="radio" name="sale_type" value="wholesale" class="peer sr-only" {% if form_data.sale_type == 'wholesale' %}checked{% endif %}>
         <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
                      peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">လက်ကား</span>
       </label>
@@ -36,7 +36,7 @@
       ဝယ်သူအမည် (မဖြစ်မနေမဟုတ်)
     </label>
 
-    <input type="text" name="customer" id="id_customer" maxlength="200"
+    <input type="text" name="customer" id="id_customer" maxlength="200" value="{{ form_data.customer }}"
            class="w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
                   focus:border-brick-500 focus:outline-none focus:ring-2 focus:ring-brick-200">
   </div>
@@ -61,13 +61,13 @@
 
     <div class="flex gap-3">
       <label class="flex-1">
-        <input type="radio" name="pay_by" value="cash" class="peer sr-only" checked>
+        <input type="radio" name="pay_by" value="cash" class="peer sr-only" {% if form_data.pay_by != 'kpay' %}checked{% endif %}>
         <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
                      peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">ငွေသား</span>
       </label>
 
       <label class="flex-1">
-        <input type="radio" name="pay_by" value="kpay" class="peer sr-only">
+        <input type="radio" name="pay_by" value="kpay" class="peer sr-only" {% if form_data.pay_by == 'kpay' %}checked{% endif %}>
         <span class="block rounded-lg border-2 border-stone-300 py-2.5 text-center text-sm font-medium text-stone-600
                      peer-checked:border-brick-600 peer-checked:bg-brick-600 peer-checked:text-white">KPay</span>
       </label>
@@ -137,6 +137,9 @@
   </div>
 </template>
 
+<!-- Rows typed before an error, used to refill the form -->
+{{ form_data.rows|json_script:"savedRows" }}
+
 <!-- Tom Select JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
 
@@ -181,32 +184,50 @@
   }
 
   // Add new product row + searchable dropdown
-  function addRow() {
+  // "saved" is a row sent back by the server after an error
+  function addRow(saved) {
     list.appendChild(tpl.content.cloneNode(true));
 
     const rows = list.querySelectorAll(".item-row");
     const lastRow = rows[rows.length - 1];
     const select = lastRow.querySelector(".p-select");
 
-    new TomSelect(select, {
-      create: false,
-      maxOptions: 1000,
-      placeholder: "ကုဒ် သို့မဟုတ် အမည်ဖြင့် ရှာရန်...",
-      allowEmptyOption: true,
-      searchField: ["text"],
-      closeAfterSelect: true
-    });
+    if (saved) {
+      select.value = saved.product;
+      if (select.selectedIndex < 0) select.selectedIndex = 0;
+      lastRow.querySelector(".p-qty").value = saved.quantity;
+      lastRow.querySelector(".p-price").value = saved.unit_price;
 
-    refresh(true);
+      // Mark the row that needs fixing
+      if (saved.bad) {
+        lastRow.classList.remove("ring-1", "ring-stone-100");
+        lastRow.classList.add("ring-2", "ring-red-500");
+      }
+    }
+
+    if (window.TomSelect) {
+      new TomSelect(select, {
+        create: false,
+        maxOptions: 1000,
+        placeholder: "ကုဒ် သို့မဟုတ် အမည်ဖြင့် ရှာရန်...",
+        allowEmptyOption: true,
+        searchField: ["text"],
+        closeAfterSelect: true
+      });
+    }
+
+    if (!saved) refresh(false);
   }
 
   // Add product button
-  document.getElementById("addBtn").addEventListener("click", addRow);
+  document.getElementById("addBtn").addEventListener("click", () => addRow());
 
-  // Product selection
+  // Product selection: only the changed row gets the new product's price
   list.addEventListener("change", e => {
     if (e.target.classList.contains("p-select")) {
-      refresh(true);
+      const row = e.target.closest(".item-row");
+      row.querySelector(".p-price").value = basePrice(row) || "";
+      refresh(false);
     }
   });
 
@@ -236,8 +257,14 @@
     radio.addEventListener("change", () => refresh(true))
   );
 
-  // Start with one row
-  addRow();
+  // Refill the rows after an error, otherwise start with one row
+  const savedRows = JSON.parse(document.getElementById("savedRows").textContent);
+  if (savedRows.length) {
+    savedRows.forEach(row => addRow(row));
+    refresh(false);
+  } else {
+    addRow();
+  }
 </script>
 
 {% endblock %}

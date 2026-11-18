@@ -9,12 +9,17 @@ from django.contrib.auth.decorators import login_required
 def receipt_create(request):
   products = Product.objects.filter(in_stock=True)
   error = None
+  form_data = {"sale_type":"retail","pay_by":"cash","customer":"","rows":[]}
 
   rows=[]
   if request.method == "POST":
     saletype = request.POST.get("sale_type","retail")
     payby = request.POST.get("pay_by","cash")
     customer = request.POST.get("customer","").strip() or None
+
+    # Keep what was typed so the form can be refilled if there is an error
+    form_data = {"sale_type":saletype,"pay_by":payby,"customer":customer or "","rows":[]}
+    has_bad_row = False
 
     if saletype not in Receipt.SaleType.values: saletype = "retail"
     if payby not in Receipt.PayBy.values: payby = "cash"
@@ -28,16 +33,20 @@ def receipt_create(request):
       if not pid and not q.strip():
         continue
 
-      product = Product.objects.filter(pk=pid).first() if pid else None
+      product = Product.objects.filter(pk=pid).first() if pid.isdigit() else None
 
       try:
         qty = Decimal(q)
-      except (InvalidOperation,TypeError):
-        continue
+      except InvalidOperation:
+        qty = None
 
-      if not product or qty <= 0:
-        error = "ကုန်ပစ္စည်းနှင့် အရေအတွက် နှစ်ခုလုံး မှန်ကန်စွာ ဖြည့်ပါ။"
-        break
+      bad = not product or qty is None or not qty.is_finite() or qty <= 0
+      form_data["rows"].append({"product":pid,"quantity":q,"unit_price":pr,"bad":bad})
+
+      # Check every row first. Nothing is saved if any row is wrong.
+      if bad:
+        has_bad_row = True
+        continue
 
       price = product.price
       if saletype == "wholesale" and pr.strip():
@@ -50,8 +59,10 @@ def receipt_create(request):
 
       rows.append((product,qty,price))
 
-    if not rows:
+    if not form_data["rows"]:
       error = "ကုန်ပစ္စည်း အနည်းဆုံး တစ်ခု ထည့်ပါ။"
+    elif has_bad_row:
+      error = "ကုန်ပစ္စည်းနှင့် အရေအတွက် နှစ်ခုလုံး မှန်ကန်စွာ ဖြည့်ပါ။"
     else:
       with transaction.atomic():
           receipt = Receipt.objects.create(
@@ -67,7 +78,8 @@ def receipt_create(request):
               unit_price=pr
             )
       return redirect('receipt_detail',pk=receipt.pk)
-  return render(request,"receiptinfo/receipt_create.html",{"products":products,"error":error})
+  return render(request,"receiptinfo/receipt_create.html",{"products":products,"error":error,"form_data":form_data})
+ 
 
 @login_required
 def receipt_view(request):

@@ -6,7 +6,8 @@ from django.db.models import Sum,F,ExpressionWrapper,DecimalField
 from django.utils import timezone
 from django.db.models.functions import Coalesce
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q,ProtectedError
+from django.contrib import messages
 from datetime import timedelta
 #Product View & search filter
 @login_required
@@ -57,7 +58,10 @@ def product_edit(request,pk):
 def product_delete(request,pk):
   product = get_object_or_404(Product,pk=pk)
   if request.method == "POST":
-    product.delete()
+    try:
+      product.delete()
+    except ProtectedError:
+      messages.error(request,"ဤကုန်ပစ္စည်းကို ရောင်းပြီးဖြစ်၍ ဖျက်၍မရပါ။ ကုန်ပြတ်အဖြစ် ပြောင်းနိုင်ပါသည်။")
     return redirect('product_view')
   return render(request,'productinfo/product_delete.html',{'product':product})
 
@@ -65,7 +69,7 @@ def product_delete(request,pk):
 def index(request):
 
   # receipt Count
-  count = Receipt.objects.count()
+  count = Receipt.objects.filter(is_void=False).count()
   kpay  = Receipt.objects.filter(is_void=False,pay_by='kpay').count()
   cash  = Receipt.objects.filter(is_void=False,pay_by="cash").count()
 
@@ -88,6 +92,7 @@ def index(request):
 
   # highest amount 
   highest_amount = ReceiptItem.objects.filter(
+    receipt__is_void=False,
     receipt__created_at__date=timezone.localdate()
   ).values(
     'product__name'
